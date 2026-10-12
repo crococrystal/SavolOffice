@@ -13,6 +13,7 @@ use std::fmt::Write as _;
 use serde_json::Value;
 
 fn main() {
+    bundled_cjk();
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contributors");
     let json = read(&dir.join("contributors.json"), "the About window shows no contributors", |t| {
         serde_json::from_str::<Value>(t).map_err(|e| e.to_string())
@@ -102,4 +103,28 @@ fn generate(json: &Value, people: &toml::Table) -> String {
     }
     let _ = writeln!(o, "];");
     o
+}
+
+/// Optional build input; release packaging requires it so CJK never depends on OS language packs.
+fn bundled_cjk() {
+    println!("cargo::rerun-if-env-changed=CRAFT_FONTS_DIR");
+    println!("cargo::rerun-if-env-changed=CRAFT_FONTS_REQUIRED");
+    let path = std::env::var_os("CRAFT_FONTS_DIR").map(std::path::PathBuf::from).map(|d| d.join("fonts/noto-sans-cjk-sc/NotoSansCJKsc-Regular.otf"));
+    let resolved = path.as_ref().and_then(|path| {
+        println!("cargo::rerun-if-changed={}", path.display());
+        path.canonicalize().ok()
+    });
+    let src = match resolved {
+        Some(path) => format!("pub const BUNDLED_CJK: &[u8] = include_bytes!({:?});\n", path.to_string_lossy()),
+        None => {
+            if std::env::var_os("CRAFT_FONTS_REQUIRED").is_some() {
+                println!("cargo::error=CRAFT_FONTS_REQUIRED: Noto Sans CJK SC is missing from CRAFT_FONTS_DIR");
+            }
+            "pub const BUNDLED_CJK: &[u8] = &[];\n".into()
+        }
+    };
+    let out = std::path::PathBuf::from(std::env::var_os("OUT_DIR").unwrap_or_default()).join("bundled_cjk.rs");
+    if let Err(e) = std::fs::write(&out, src) {
+        println!("cargo::error=writing {}: {e}", out.display());
+    }
 }

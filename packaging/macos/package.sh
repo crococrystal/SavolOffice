@@ -15,6 +15,8 @@ set -euo pipefail
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
 HERE="$ROOT/packaging/macos"
+export CRAFT_FONTS_DIR="${CRAFT_FONTS_DIR:-$ROOT/craft-fonts}"
+export CRAFT_FONTS_REQUIRED=1
 
 ARCH=universal
 SKIP_BUILD=0

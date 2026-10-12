@@ -9,18 +9,33 @@ jobs:
     timeout-minutes: 45
     env:
       RUSTUP_TOOLCHAIN: 1.95.0
+      CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+      CRAFT_FONTS_REQUIRED: "1"
       CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS: -C target-feature=+crt-static
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch fallback font (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: 3d9ab3a132ed0eff457e424226a435a901da30d3
+          path: craft-fonts
       - name: Install Rust
         run: rustup toolchain install 1.95.0 --profile minimal --target x86_64-pc-windows-msvc
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: windows-rust-1.95-${{ hashFiles('Cargo.lock') }}
       - name: Build Windows x64 app
         run: ./packaging/windows/package.ps1 -Arch x64
       - name: Regression tests
         run: |
           cargo test --release --target x86_64-pc-windows-msvc -p gridcraft-calc hyperlink_destination --lib
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --release --target x86_64-pc-windows-msvc -p gridcraft-ui-egui --test cell_pictures --test interaction
+          cargo test --release --target x86_64-pc-windows-msvc -p gridcraft-ui-egui --test cell_pictures --test interaction --test symbol_glyphs
       - name: Launch native Windows app
         run: python packaging/windows/smoke.py
       - uses: actions/upload-artifact@v4

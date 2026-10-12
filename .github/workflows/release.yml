@@ -11,6 +11,12 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch fallback font (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: 3d9ab3a132ed0eff457e424226a435a901da30d3
+          path: craft-fonts
       - name: Install Rust
         run: rustup toolchain install 1.95.0 --profile minimal --target aarch64-apple-darwin
       - name: Build Savol Office for Apple Silicon

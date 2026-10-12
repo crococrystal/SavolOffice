@@ -1,13 +1,15 @@
 //! Design tokens and fonts.
 //!
 //! Colours are our own, tuned to read like a modern desktop spreadsheet. Fonts come from the
-//! operating system at runtime (nothing bundled): the UI uses the platform UI font, cells use the
+//! operating system at runtime, with an optional bundled CJK fallback: the UI uses the platform UI font, cells use the
 //! best available match for the workbook font (Calibri/Carlito/Aptos/Arial…) with egui's built-in
 //! fonts as the last resort.
 
 use std::sync::Arc;
 
 use egui::{Color32, FontData, FontDefinitions, FontFamily, FontId, Stroke, Visuals};
+
+include!(concat!(env!("OUT_DIR"), "/bundled_cjk.rs"));
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Tokens {
@@ -392,7 +394,11 @@ pub fn font_definitions_with(language: crate::i18n::Language, used: &[String]) -
     let mut bound: Vec<String> = Vec::new();
     // The non-Latin fallback faces have to sit at the end of each chain: a Latin font owns Latin,
     // and epaint picks the first face that has the glyph, so they only catch their own scripts.
-    let fallback = load_fallback(&mut fonts, HanOrder::of(language));
+    let mut fallback = load_fallback(&mut fonts, HanOrder::of(language));
+    if !BUNDLED_CJK.is_empty() {
+        fonts.font_data.insert("bundled-cjk".into(), Arc::new(FontData::from_static(BUNDLED_CJK)));
+        fallback.push("bundled-cjk".into());
+    }
     for role in [UI, UI_BOLD, CELL, CELL_BOLD, CELL_ITALIC, CELL_BOLD_ITALIC, SERIF, MONO] {
         let paths = candidates(role);
         let refs: Vec<(&str, u32)> = paths.iter().map(|(p, i)| (p.as_str(), *i)).collect();
@@ -406,15 +412,16 @@ pub fn font_definitions_with(language: crate::i18n::Language, used: &[String]) -
         } else if role.starts_with("cell-") {
             chain.push(format!("sys-{CELL}"));
         }
+        // Older Arial/Times faces lack ₽; the platform UI face supplies modern currency glyphs.
+        let ui_key = format!("sys-{UI}");
+        if fonts.font_data.contains_key(&ui_key) && !chain.contains(&ui_key) {
+            chain.push(ui_key);
+        }
         chain.extend(if role == MONO { base_mono.clone() } else { base_prop.clone() });
         chain.extend(fallback.iter().cloned());
         chain.retain(|k| fonts.font_data.contains_key(k));
         fonts.families.insert(FontFamily::Name(role.into()), chain);
         bound.push(role.to_string());
-    }
-    // Installed workbook fonts, so a cell's chosen font actually renders in it.
-    for family in crate::fonts::installed_among(used) {
-        bound.extend(crate::fonts::bind_family(&mut fonts, &family));
     }
     // Interface text (formula bar, name box, dialogs) falls back to the cell font before the
     // script faces: whatever a cell can draw, the formula bar can draw too, even where no script
@@ -433,6 +440,10 @@ pub fn font_definitions_with(language: crate::i18n::Language, used: &[String]) -
     // Default proportional text in widgets uses the UI font.
     if let Some(ui) = fonts.families.get(&FontFamily::Name(UI.into())).cloned() {
         fonts.families.insert(FontFamily::Proportional, ui);
+    }
+    // Bind after Proportional has the complete fallback chain, including currencies and CJK.
+    for family in crate::fonts::installed_among(used) {
+        bound.extend(crate::fonts::bind_family(&mut fonts, &family));
     }
     drop_unparseable_fonts(&mut fonts);
     // Only families egui still has data for count as bound (a dropped face can empty a chain).
@@ -777,8 +788,11 @@ mod tests {
         for han in [HanOrder::Chinese, HanOrder::Japanese] {
             let language = if han == HanOrder::Japanese { Language::Ja } else { Language::Zh };
             let fonts = font_definitions_for_language(language);
-            let fb_keys: Vec<String> =
+            let mut fb_keys: Vec<String> =
                 fallback_faces(han).into_iter().map(|(k, _)| k.to_string()).filter(|k| fonts.font_data.contains_key(k)).collect();
+            if fonts.font_data.contains_key("bundled-cjk") {
+                fb_keys.push("bundled-cjk".into());
+            }
             if fb_keys.is_empty() {
                 return; // no fallback face on this machine (minimal Linux)
             }

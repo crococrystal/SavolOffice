@@ -12,5 +12,7 @@ Third-party material
 This product bundles third-party material under its own licenses, listed below. The per-file
 list (author, source, license) is in ATTRIBUTION.md.
 
-None: every bundled asset is original to GridCraft. Builds made with craft-fonts
-(CRAFT_FONTS_DIR) embed the fonts listed in ATTRIBUTION.md under the SIL Open Font License 1.1.
+Savol Office builds made with CRAFT_FONTS_DIR embed Noto Sans CJK SC Regular
+from storytold/craft-fonts (commit 3d9ab3a132ed0eff457e424226a435a901da30d3),
+under the SIL Open Font License 1.1. See OFL-noto-sans-cjk-sc.txt in the package.
+Font copyright and source details are retained in that licence and craft-fonts/ATTRIBUTION.md.

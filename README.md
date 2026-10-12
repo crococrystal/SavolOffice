@@ -14,3 +14,5 @@ Upstream architecture, file-format support and known limitations are documented 
 The v3 app and DMG volume use the supplied Savol Office artwork, with macOS icon sizes 16–1024 px including Retina. Regenerate them with `bash packaging/macos/icons.sh` (rsvg-convert and ImageMagick required).
 
 Windows x64: `pwsh packaging/windows/package.ps1 -Arch x64` produces a standalone `Savol Office.exe` and a ZIP with licence files. The manual Windows workflow builds and checks the native app on a Windows runner. No separate CLI application is shipped.
+
+Release builds embed the OFL-licensed Noto Sans CJK SC fallback. Before a local release, clone `https://github.com/storytold/craft-fonts` into `craft-fonts` and check out `3d9ab3a132ed0eff457e424226a435a901da30d3`. Installed workbook fonts retain the complete fallback chain (currency symbols, Cyrillic and CJK); font names in the document remain unchanged. Exact metrics still require the requested font to be installed.

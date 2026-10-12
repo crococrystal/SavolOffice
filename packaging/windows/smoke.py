@@ -24,6 +24,9 @@ try:
     with connection, connection.makefile('rwb') as stream:
         for method, params in [
             ('ui.inspect', {}),
+            ('cell.set', {'cell': 'A12', 'input': 'Русский Ёё — 123 456 ₽ — 中文 繁體 日本語 한국어'}),
+            ('home.fontName', {'range': 'A12', 'name': 'Arial'}),
+            ('home.fontSize', {'range': 'A12', 'size': 20}),
             ('ui.focus', {}),
             ('ui.screenshot', {'path': str(root / 'dist/release/windows-smoke.png')}),
         ]:
