@@ -42,6 +42,6 @@ Generated-in-code art is original and has no file to list: the UI icon set (`cra
 | `docs/images/pivot.png` | GridCraft contributors | screenshot of GridCraft rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
 | `docs/images/format-chart.png` | GridCraft contributors | screenshot of GridCraft rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
 | `docs/images/page-break.png` | GridCraft contributors | screenshot of GridCraft rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
-| `assets/app-icon/savoloffice.svg` | SavolOffice contributors | Original hand-written SVG | MIT OR Apache-2.0 | SavolOffice spreadsheet icon |
-| `assets/app-icon/savoloffice-512.png` | SavolOffice contributors | Rendered from savoloffice.svg | MIT OR Apache-2.0 | Runtime icon |
-| `assets/app-icon/savoloffice.icns` | SavolOffice contributors | Rendered from savoloffice.svg | MIT OR Apache-2.0 | macOS bundle icon |
+| `assets/app-icon/savoloffice.svg` | User-provided artwork | savol-office-macbook-icon.svg supplied by the user | User-authorized use in SavolOffice | Rounded macOS tile; original symbol preserved |
+| `assets/app-icon/savoloffice-512.png` | User-provided artwork | Rendered from savoloffice.svg | User-authorized use in SavolOffice | Runtime icon |
+| `assets/app-icon/savoloffice.icns` | User-provided artwork | Rendered from savoloffice.svg | User-authorized use in SavolOffice | macOS bundle icon |

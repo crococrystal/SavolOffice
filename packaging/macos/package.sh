@@ -131,6 +131,8 @@ STAGE="$WORK/dmg"
 mkdir -p "$STAGE"
 ditto "$APP" "$STAGE/SavolOffice.app"
 ln -s /Applications "$STAGE/Applications"
+cp "$ROOT/assets/app-icon/savoloffice.icns" "$STAGE/.VolumeIcon.icns"
+xcrun SetFile -a C "$STAGE"
 rm -f "$DMG"
 # makehybrid synthesizes FinderInfo on signed bundle files, invalidating strict verification.
 hdiutil create -fs HFS+ -volname "SavolOffice" -srcfolder "$STAGE" -format UDZO -imagekey zlib-level=9 "$DMG"

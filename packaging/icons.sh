@@ -43,19 +43,5 @@ for s in 16 20 24 32 40 48 64 128 256; do
 done
 (cd "$ROOT" && cargo run -q -p xtask --no-default-features -- ico "$DIR/gridcraft.ico" "${ICO_PNGS[@]}")
 
-# SavolOffice runtime icon; its SVG already includes the macOS transparent margin.
-render "$DIR/savoloffice.svg" 512 "$DIR/savoloffice-512.png"
-
-# SavolOffice macOS .icns.
-if command -v iconutil >/dev/null; then
-  SET="$TMP/savoloffice.iconset"
-  mkdir -p "$SET"
-  for s in 16 32 128 256 512; do
-    render "$DIR/savoloffice.svg" "$s" "$SET/icon_${s}x${s}.png"
-    render "$DIR/savoloffice.svg" $((s * 2)) "$SET/icon_${s}x${s}@2x.png"
-  done
-  iconutil -c icns -o "$DIR/savoloffice.icns" "$SET"
-else
-  echo "warning: iconutil not found (macOS only); savoloffice.icns not regenerated" >&2
-fi
+bash "$ROOT/packaging/macos/icons.sh"
 echo "icons written to $DIR"
