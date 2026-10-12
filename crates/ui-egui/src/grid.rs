@@ -1869,13 +1869,17 @@ fn interact(app: &mut SheetApp, ui: &mut egui::Ui, resp: &egui::Response, geo: &
                 let _ = app.run("cell.toggleCheckbox", json!({"cell": c.a1()}));
             }
             // A click on a hyperlink's text follows it (like Excel); elsewhere in the cell selects.
-            if let Some(h) = sh.hyperlinks.get(&c).cloned()
-                && primary_clicked
+            if primary_clicked
                 && !mods.any()
+                && let Some(h) = cell_hyperlink(wb, wb.active_sheet, c)
             {
                 let r = geo.cell_rect(sh, c);
                 if p.x < r.left() + r.width() * 0.8 {
                     follow_link(app, &h.target);
+                    app.grid.last_click = None;
+                    app.grid.drag = Drag::None;
+                    app.grid.drag_select = false;
+                    return;
                 }
             }
         }
@@ -2017,7 +2021,7 @@ fn interact(app: &mut SheetApp, ui: &mut egui::Ui, resp: &egui::Response, geo: &
                     // Ctrl (Cmd on macOS) swaps copying and extending, as in Excel.
                     let mode = if mods.command { "alternate" } else { "series" };
                     if let Err(e) = app.run("edit.autoFill", json!({"source": src.a1(), "target": t.a1(), "mode": mode})) {
-                        app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                        app.message = Some(("SavolOffice".into(), crate::clean_error(&e)));
                     }
                 }
             }
@@ -2038,7 +2042,7 @@ fn interact(app: &mut SheetApp, ui: &mut egui::Ui, resp: &egui::Response, geo: &
             }
             Drag::MoveCols { source, before: Some(before) } => {
                 if let Err(e) = app.run("sheet.moveColumns", json!({"cols": source.a1(), "before": before})) {
-                    app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                    app.message = Some(("SavolOffice".into(), crate::clean_error(&e)));
                 }
             }
             _ => {}
@@ -2279,6 +2283,17 @@ fn delete_selected_object(app: &mut SheetApp, sh: &Sheet) -> bool {
     app.run_or_alert("object.delete", json!({"kind": kind, "id": id}));
     app.selected_chart = None;
     true
+}
+
+fn cell_hyperlink(wb: &Workbook, si: usize, c: CellRef) -> Option<gridcraft_engine::model::Hyperlink> {
+    let sh = wb.sheet(si)?;
+    let c = sh.merge_at(c).map_or(c, |range| range.start);
+    if let Some(link) = sh.hyperlinks.get(&c) {
+        return Some(link.clone());
+    }
+    let formula = sh.cell(c)?.formula.as_ref()?;
+    let target = gridcraft_engine::calc::hyperlink_target(wb, si, c, &formula.text)?;
+    Some(gridcraft_engine::model::Hyperlink { target, tooltip: None })
 }
 
 pub fn follow_link(app: &mut SheetApp, target: &str) {
@@ -2765,9 +2780,10 @@ pub(crate) fn paint_overlays(
         );
     }
     // Hyperlink tooltip.
-    if let Some(h) = hover.and_then(|c| sh.hyperlinks.get(&c))
-        && app.editor.is_none()
+    if app.editor.is_none()
+        && let Some(h) = hover.filter(|&c| !geo.hidden_under_frozen(sh, c)).and_then(|c| cell_hyperlink(wb, si, c))
     {
+        ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
         let tip = h.tooltip.clone().unwrap_or_else(|| format!("{}\nClick once to follow. Click and hold to select this cell.", h.target));
         egui::Tooltip::always_open(ui.ctx().clone(), ui.layer_id(), egui::Id::new("link_tip"), egui::PopupAnchor::Pointer).show(|ui| {
             ui.label(tip);

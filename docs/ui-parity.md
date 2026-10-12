@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (AutoFit reserves filter dropdown space, observed against Windows Excel) · **Target:** Microsoft Excel (Microsoft 365), Excel for Mac 16.113.4
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (local savol.2: picture clipping and formula hyperlink navigation) · **Target:** Microsoft Excel (Microsoft 365), Excel for Mac 16.113.4
 
 Interaction, controls and feel, against Excel. Part of [target-app-parity.md](target-app-parity.md).
 **UI/UX fidelity: ~55% ready, 50–80 h** (estimated). Ribbon command coverage is measured
@@ -32,6 +32,11 @@ Sources: `crates/ui-egui/src` (ribbon, grid, editor, formula bar, dialogs, panes
 | Multiple windows per workbook | yes | no (#162) | see [hardware-parity.md](hardware-parity.md) |
 
 ## Grid interaction
+
+Local `0.6.1-savol.2`: floating pictures are clipped and hit-tested per frozen/scrolling pane,
+including pictures that cross a pane boundary. Scalar `HYPERLINK` formulas, including selected
+`IF`, `IFERROR` and `IFNA` branches, expose the evaluated destination to clicking and hover tips.
+Other formula wrappers and array hyperlinks remain unsupported.
 
 AutoFit column width includes dropdown space only for filter header cells (tables and ordinary
 AutoFilters), then takes the maximum against body cells. Windows Excel 16.0 build 20326,
@@ -175,3 +180,7 @@ scrollbar bugs 2–4 · pixel/feel pass against observed Excel 7–12.
 | 2026-10-11 | major | Sequential Alt keytips: full-tab table (364 sequences), badges on every control, dropdowns open for typing/arrow editing, colour-palette arrows, real-Excel corrections (issues #33, #49) |
 | 2026-10-10 | minor | Chart resize bug (#190) |
 | 2026-10-10 | major | Created: chrome, grid, keyboard, dialogs, accessibility; key tips, Page Layout view and accessibility tree flagged |
+
+SavolOffice v2: the macOS installer now contains one SavolOffice.app with its own icon, menus, bundle ID and preferences directory. Original GridCraft contributors remain credited in About. The installer is SavolOffice.dmg; the local Apple Silicon build is ad-hoc signed.
+
+Validation (macOS Apple Silicon): 1,340 workspace tests passed, one ignored; assets, layers, WASM, parity and keytips gates passed. Full Clippy is blocked by three upstream warnings (xlsx collapsible_match/nonminimal_bool, grid overly_complex_bool_expr); it passes with only those baseline lints allowed. The release DMG was mounted and its app signature, bundle identity and contents verified. The real price-list copy was opened in the native app and both hyperlink directions were checked.

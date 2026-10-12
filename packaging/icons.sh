@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerate every app icon from assets/app-icon/gridcraft.svg.
+# Regenerate app icons from assets/app-icon/{gridcraft,savoloffice}.svg.
 #
 # Needs: resvg (brew install resvg / cargo install resvg). On macOS, iconutil also writes the
 # .icns. The outputs are committed, so builds and packaging never need these tools.
@@ -43,16 +43,19 @@ for s in 16 20 24 32 40 48 64 128 256; do
 done
 (cd "$ROOT" && cargo run -q -p xtask --no-default-features -- ico "$DIR/gridcraft.ico" "${ICO_PNGS[@]}")
 
-# macOS .icns.
+# SavolOffice runtime icon; its SVG already includes the macOS transparent margin.
+render "$DIR/savoloffice.svg" 512 "$DIR/savoloffice-512.png"
+
+# SavolOffice macOS .icns.
 if command -v iconutil >/dev/null; then
-  SET="$TMP/gridcraft.iconset"
+  SET="$TMP/savoloffice.iconset"
   mkdir -p "$SET"
   for s in 16 32 128 256 512; do
-    render "$MAC" "$s" "$SET/icon_${s}x${s}.png"
-    render "$MAC" $((s * 2)) "$SET/icon_${s}x${s}@2x.png"
+    render "$DIR/savoloffice.svg" "$s" "$SET/icon_${s}x${s}.png"
+    render "$DIR/savoloffice.svg" $((s * 2)) "$SET/icon_${s}x${s}@2x.png"
   done
-  iconutil -c icns -o "$DIR/gridcraft.icns" "$SET"
+  iconutil -c icns -o "$DIR/savoloffice.icns" "$SET"
 else
-  echo "warning: iconutil not found (macOS only); gridcraft.icns not regenerated" >&2
+  echo "warning: iconutil not found (macOS only); savoloffice.icns not regenerated" >&2
 fi
 echo "icons written to $DIR"

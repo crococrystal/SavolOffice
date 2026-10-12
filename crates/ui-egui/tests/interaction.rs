@@ -86,6 +86,28 @@ fn click_cell(h: &mut egui_kittest::Harness<'static, SheetApp>, cell: &str) {
     h.run_steps(2);
 }
 
+#[test]
+fn formula_hyperlink_click_opens_the_invoice_and_blank_branch_does_not() {
+    let mut s = blank();
+    s.execute("sheet.rename", json!({"name": "Товары"})).unwrap();
+    s.execute("home.insertSheet", json!({"name": "Накладная"})).unwrap();
+    s.execute("sheet.activate", json!({"sheet": "Товары"})).unwrap();
+    s.execute("cell.set", json!({"cell": "A1", "input": "2"})).unwrap();
+    s.execute("cell.set", json!({"cell": "B2", "input": "=IF(A1>0,IFERROR(HYPERLINK(\"#'Накладная'!J\"&(A1+3),\"→\"),\"→\"),\"\")"})).unwrap();
+    let mut h = harness(s);
+    click_cell(&mut h, "B2");
+    let d = h.state().session.active().unwrap();
+    assert_eq!(d.wb.active().unwrap().name, "Накладная");
+    assert_eq!(d.selection.active.a1(), "J5");
+    h.run_steps(4);
+    assert_eq!(h.state().session.active().unwrap().selection.active.a1(), "J5", "navigation must not be undone by the click's release");
+    h.state_mut().run("sheet.activate", json!({"sheet": "Товары"})).unwrap();
+    h.state_mut().run("cell.set", json!({"cell": "A1", "input": "0"})).unwrap();
+    h.run_steps(4);
+    click_cell(&mut h, "B2");
+    assert_eq!(h.state().session.active().unwrap().wb.active().unwrap().name, "Товары");
+}
+
 fn click_chart(h: &mut egui_kittest::Harness<'static, SheetApp>, id: u32) {
     let app = h.state();
     let sheet = app.session.active().unwrap().wb.active().unwrap();

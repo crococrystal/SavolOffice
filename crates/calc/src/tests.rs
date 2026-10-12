@@ -7,6 +7,29 @@ fn c(s: &str) -> CellRef {
     CellRef::parse(s).unwrap()
 }
 
+#[test]
+fn hyperlink_destination_follows_the_active_formula_branch() {
+    let mut t = T::new();
+    t.set("K57", "2");
+    t.set("A57", " SKU-1 ");
+    t.set("B1", "SKU-1");
+    t.set("M1", "4");
+    let formula = r##"=IF(K57>0,IFERROR(HYPERLINK("#'Накладная'!J"&(INDEX($M:$M,MATCH(TRIM(A57),$B:$B,0))+3),"→"),"→"),"")"##;
+    let target = |t: &T, formula: &str| crate::hyperlink_target(&t.wb, 0, c("L57"), formula);
+    assert_eq!(target(&t, formula).as_deref(), Some("#'Накладная'!J7"));
+    t.set("K57", "0");
+    assert_eq!(target(&t, formula), None);
+    t.set("K57", "2");
+    t.set("A57", "unknown");
+    assert_eq!(target(&t, formula), None);
+    assert_eq!(target(&t, r##"=IFERROR(1/0,HYPERLINK("#A2","go"))"##).as_deref(), Some("#A2"));
+    assert_eq!(target(&t, r##"=IFNA(1/0,HYPERLINK("#A2","go"))"##), None);
+    assert_eq!(target(&t, r##"=IF(FALSE,HYPERLINK("#A2","go"),"plain text")"##), None);
+    assert_eq!(target(&t, r##"=HYPERLINK("#A2",1/0)"##), None);
+    assert_eq!(target(&t, r##"=HYPERLINK("","go")"##), None);
+    assert_eq!(target(&t, r##"="prefix"&HYPERLINK("#A2","go")"##), None);
+}
+
 struct T {
     wb: Workbook,
     calc: Calc,

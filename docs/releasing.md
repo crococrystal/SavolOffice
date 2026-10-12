@@ -1,3 +1,9 @@
+# SavolOffice release note
+
+The fork currently distributes one macOS spreadsheet app. Use `packaging/macos/package.sh --arch aarch64`; the manual Build SavolOffice DMG workflow runs the same command and uploads SavolOffice.dmg. This build is ad-hoc signed unless local signing credentials are provided. Increment the integer `-savol.N` in Cargo.toml for each release.
+
+The remaining sections describe upstream infrastructure; Windows/Linux and CLI release jobs are not used by this fork.
+
 # Releasing GridCraft
 
 Every push to the `release` branch runs `.github/workflows/release.yml`. The workflow builds
@@ -76,7 +82,7 @@ and upload their artifacts, the environment refuses macOS and Windows, and no re
 
 | Platform | Artifacts | Built on |
 |---|---|---|
-| macOS 11+ (universal: Apple silicon + Intel) | `gridcraft-<v>-macos-universal.dmg`, `gridcraft-cli-<v>-macos-universal.zip` | `macos-15` |
+| macOS 11+ (universal: Apple silicon + Intel) | `SavolOffice.dmg` (one `SavolOffice.app`) | `macos-15` |
 | Windows 10+ x64 | `gridcraft-<v>-windows-x64.msi`, `gridcraft-<v>-windows-x64-portable.zip` | `windows-latest` |
 | Windows 10+ x86 (32-bit) | `gridcraft-<v>-windows-x86.msi`, `gridcraft-<v>-windows-x86-portable.zip` | `windows-latest` |
 | Windows 11 ARM64 | `gridcraft-<v>-windows-arm64.msi`, `…-portable.zip` (cross-compiled, signed like x64) | `windows-latest`; installed and run on `windows-11-arm` by `windows-arm64.yml` |
@@ -112,7 +118,7 @@ Locally, without certificates, the script signs ad-hoc (`codesign -s -`) and ski
 ```sh
 packaging/macos/package.sh                    # universal; needs both rustup targets
 packaging/macos/package.sh --arch aarch64     # quicker, host-only
-open dist/release/gridcraft-*-macos-*.dmg
+open dist/release/SavolOffice.dmg
 ```
 
 ### Windows

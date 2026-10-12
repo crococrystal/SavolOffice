@@ -1,3 +1,5 @@
+> Legacy GridCraft artwork and layout. SavolOffice packaging does not include these files; it creates a plain DMG containing SavolOffice.app and the Applications shortcut.
+
 # macOS DMG window
 
 What Finder shows when the DMG opens: a 660 × 400 pt background with the app icon and the

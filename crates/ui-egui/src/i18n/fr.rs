@@ -230,7 +230,7 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Command\nPalette" => "Palette de commandes",
         "Agent\nControl" => "Contrôle de l’agent",
         "Action\nJournal" => "Journal des actions",
-        "About\nGridCraft" => "À propos de GridCraft",
+        "About\nSavolOffice" => "À propos de SavolOffice",
         "Share" => "Partager",
         "Add Chart\nElement" => "Ajouter un élément de graphique",
         "Change\nChart Type" => "Modifier le type de graphique",

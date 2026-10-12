@@ -62,6 +62,49 @@ fn image_meshes(h: &egui_kittest::Harness<'static, SheetApp>) -> Vec<(Rect, Rect
 }
 
 #[test]
+fn floating_picture_is_clipped_and_not_clickable_over_frozen_headers() {
+    for zoom in [75, 100, 150] {
+        let mut h = harness(Default::default());
+        h.state_mut()
+            .run("insert.picture", json!({"base64": gridcraft_engine::io::base64_encode(&png()), "at": "D5", "width": 240, "height": 120}))
+            .unwrap();
+        h.state_mut().run("view.freezePanes", json!({"cell": "C3"})).unwrap();
+        h.state_mut().run("view.zoom", json!({"percent": zoom})).unwrap();
+        h.state_mut().view_mut().unwrap().scroll = vec2(130.0, 60.0);
+        h.run_steps(4);
+        let app = h.state();
+        let sh = app.session.doc().unwrap().wb.active().unwrap();
+        let geo = Geo::new(sh, app.grid.rect.unwrap(), app.view().scroll);
+        let split = geo.cells.min + vec2(geo.frozen_w, geo.frozen_h);
+        let meshes = image_meshes(&h);
+        assert_eq!(meshes.len(), 1);
+        let (bounds, clip) = meshes[0];
+        assert!(bounds.top() < split.y && bounds.left() < split.x, "picture has scrolled beneath both headers");
+        assert!(clip.top() >= split.y && clip.left() >= split.x);
+        assert!(gridcraft_ui_egui::chartview::hit(app, &geo, sh, split - vec2(1.0, 1.0)).is_none());
+        assert_eq!(gridcraft_ui_egui::chartview::hit(app, &geo, sh, split + vec2(2.0, 2.0)).unwrap().0, "image");
+    }
+}
+
+#[test]
+fn picture_crossing_a_freeze_boundary_is_painted_in_each_pane() {
+    let mut h = harness(Default::default());
+    h.state_mut()
+        .run("insert.picture", json!({"base64": gridcraft_engine::io::base64_encode(&png()), "at": "A1", "width": 400, "height": 200}))
+        .unwrap();
+    h.state_mut().run("view.freezePanes", json!({"cell": "C3"})).unwrap();
+    h.state_mut().view_mut().unwrap().scroll = vec2(30.0, 15.0);
+    h.run_steps(4);
+    let meshes = image_meshes(&h);
+    assert_eq!(meshes.len(), 4);
+    for (i, (_, a)) in meshes.iter().enumerate() {
+        for (_, b) in meshes.iter().skip(i + 1) {
+            assert!(!a.intersect(*b).is_positive(), "pane clips must not overlap");
+        }
+    }
+}
+
+#[test]
 fn picture_file_pickers_preserve_placement_and_isolate_canceled_results() {
     let bytes = png();
     let path = std::env::temp_dir().join(format!("gridcraft-cell-picture-ui-{}.png", std::process::id()));

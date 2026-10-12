@@ -113,6 +113,40 @@ impl<'h> Evaluator<'h> {
         self.deref(ev)
     }
 
+    /// Resolve a scalar hyperlink only in the branch that supplies the cell's value.
+    pub fn hyperlink_target(&mut self, mut e: &Expr) -> Option<String> {
+        // shortcut: scalar IF/IFERROR/IFNA wrappers only; extend when other hyperlink wrappers are needed.
+        for _ in 0..MAX_DEPTH {
+            match e {
+                Expr::Paren(inner) => e = inner,
+                Expr::Call(name, args) if name == "HYPERLINK" && (1..=2).contains(&args.len()) => {
+                    if self.value(e).is_error() {
+                        return None;
+                    }
+                    let target = self.value(args.first()?).to_text().ok()?;
+                    return (!target.is_empty()).then_some(target);
+                }
+                Expr::Call(name, args) if name == "IF" && (1..=3).contains(&args.len()) => {
+                    let condition = self.value(args.first()?);
+                    if matches!(condition, Value::Array(_)) {
+                        return None;
+                    }
+                    e = args.get(if condition.to_bool().ok()? { 1 } else { 2 })?;
+                }
+                Expr::Call(name, args) if (name == "IFERROR" || name == "IFNA") && args.len() == 2 => {
+                    let value = self.value(args.first()?);
+                    if matches!(value, Value::Array(_)) {
+                        return None;
+                    }
+                    let caught = value.as_error().is_some_and(|error| name == "IFERROR" || error == CellError::NA);
+                    e = args.get(usize::from(caught))?;
+                }
+                _ => return None,
+            }
+        }
+        None
+    }
+
     fn resolve_sheet(&self, s: &SheetSel) -> Result<Vec<usize>, CellError> {
         let wb = self.host.workbook();
         match s {

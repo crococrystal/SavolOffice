@@ -7,6 +7,7 @@ use std::sync::Mutex;
 use egui::epaint::{PathShape, PathStroke};
 use egui::{Align2, Color32, FontId, Painter, Pos2, Rect, Stroke, StrokeKind, pos2, vec2};
 use gridcraft_chart::{HAlign, Prim, VAlign};
+use gridcraft_engine::core::CellRef;
 use gridcraft_engine::model::{Anchor, ShapeKind, Sheet, Workbook};
 
 use crate::SheetApp;
@@ -249,6 +250,26 @@ pub(crate) fn anchor_rect(geo: &Geo, sh: &Sheet, a: &Anchor) -> Rect {
     Rect::from_min_size(pos2(x, y), vec2(a.width * geo.z, a.height.max(1.0) * geo.z))
 }
 
+/// Each pane shows its own translated and clipped portion of the same picture.
+fn image_panes(geo: &Geo, sh: &Sheet, a: &Anchor) -> Vec<(Rect, Rect)> {
+    let r = anchor_rect(geo, sh, a);
+    if geo.paper.is_some() {
+        return vec![(r, geo.cells)];
+    }
+    let scroll = geo.scroll * geo.z;
+    let unscrolled = r.translate(vec2(if a.cell.col >= geo.fc { scroll.x } else { 0.0 }, if a.cell.row >= geo.fr { scroll.y } else { 0.0 }));
+    let split = pos2(geo.cells.left() + geo.frozen_w, geo.cells.top() + geo.frozen_h);
+    geo.range_panes(gridcraft_engine::core::RangeRef::new(CellRef::new(0, 0), CellRef::new(geo.fr, geo.fc)))
+        .into_iter()
+        .filter_map(|clip| {
+            let r =
+                unscrolled.translate(vec2(if clip.left() >= split.x { -scroll.x } else { 0.0 }, if clip.top() >= split.y { -scroll.y } else { 0.0 }));
+            let clip = clip.intersect(geo.cells);
+            (clip.is_positive() && r.intersects(clip)).then_some((r, clip))
+        })
+        .collect()
+}
+
 static TEXTURES: std::sync::LazyLock<Mutex<HashMap<(u32, usize), egui::TextureHandle>>> = std::sync::LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// The shapes one floating object painted (indices into the painter's layer) and its logical
@@ -327,11 +348,10 @@ pub(crate) fn paint_objects(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workboo
         done(start, r);
     }
     for im in &sh.images {
-        let r = anchor_rect(geo, sh, &im.anchor);
-        if !r.intersects(p.clip_rect()) {
+        let panes = image_panes(geo, sh, &im.anchor);
+        if panes.is_empty() {
             continue;
         }
-        let start = p.add(egui::Shape::Noop);
         let key = (im.id, im.data.len());
         let mut cache = TEXTURES.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         if !cache.contains_key(&key)
@@ -343,15 +363,19 @@ pub(crate) fn paint_objects(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workboo
             let tex = p.ctx().load_texture(format!("img{}", im.id), ci, egui::TextureOptions::LINEAR);
             cache.insert(key, tex);
         }
-        if let Some(tex) = cache.get(&key) {
-            p.image(tex.id(), r, Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
-        } else {
-            p.rect_filled(r, 0.0, Color32::from_gray(230));
+        for (r, clip) in panes {
+            let p = p.with_clip_rect(clip.intersect(p.clip_rect()));
+            let start = p.add(egui::Shape::Noop);
+            if let Some(tex) = cache.get(&key) {
+                p.image(tex.id(), r, Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
+            } else {
+                p.rect_filled(r, 0.0, Color32::from_gray(230));
+            }
+            if app.selected_chart == Some(im.id) {
+                selection_frame(&p, r);
+            }
+            done(start, r);
         }
-        if app.selected_chart == Some(im.id) {
-            selection_frame(p, r);
-        }
-        done(start, r);
     }
     for ch in &sh.charts {
         let r = anchor_rect(geo, sh, &ch.anchor);
@@ -520,8 +544,7 @@ pub fn hit(app: &SheetApp, geo: &Geo, sh: &Sheet, p: Pos2) -> Option<(&'static s
         }
     }
     for im in sh.images.iter().rev() {
-        let r = anchor_rect(geo, sh, &im.anchor);
-        if r.contains(p) && geo.cells.contains(p) {
+        if let Some((r, _)) = image_panes(geo, sh, &im.anchor).into_iter().find(|(r, clip)| r.contains(p) && clip.contains(p)) {
             return Some(("image", im.id, r));
         }
     }

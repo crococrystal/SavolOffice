@@ -7,13 +7,13 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>GridCraft</string>
+  <string>SavolOffice</string>
   <key>CFBundleName</key>
-  <string>GridCraft</string>
+  <string>SavolOffice</string>
   <key>CFBundleExecutable</key>
-  <string>GridCraft</string>
+  <string>SavolOffice</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.gridcraft</string>
+  <string>ru.savol.office</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -23,13 +23,13 @@
   <key>CFBundleShortVersionString</key>
   <string>@SHORT_VERSION@</string>
   <key>CFBundleVersion</key>
-  <string>@SHORT_VERSION@</string>
-  <key>GridCraftVersion</key>
+  <string>@BUILD_NUMBER@</string>
+  <key>SavolOfficeVersion</key>
   <string>@VERSION@</string>
-  <key>GridCraftBuildCommit</key>
+  <key>SavolOfficeBuildCommit</key>
   <string>@BUILD_SHA@</string>
   <key>CFBundleIconFile</key>
-  <string>GridCraft</string>
+  <string>SavolOffice</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.productivity</string>
   <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
@@ -43,9 +43,9 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the GridCraft authors. MIT OR Apache-2.0.</string>
+  <string>Based on GridCraft. Copyright © the GridCraft authors. Modifications by SavolOffice contributors. MIT OR Apache-2.0.</string>
 
-  <!-- Files GridCraft opens. Rank Alternate: it's offered under "Open With" without taking
+  <!-- Files SavolOffice opens. Rank Alternate: it's offered under "Open With" without taking
        over the default app (Numbers, another spreadsheet) for these types. -->
   <key>CFBundleDocumentTypes</key>
   <array>

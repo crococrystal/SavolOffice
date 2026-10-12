@@ -1101,6 +1101,15 @@ pub fn evaluate_expr(wb: &Workbook, sheet: usize, at: CellRef, expr: &Expr) -> V
     ev.value(expr)
 }
 
+/// The current destination of a HYPERLINK formula, without changing its displayed value.
+pub fn hyperlink_target(wb: &Workbook, sheet: usize, at: CellRef, formula: &str) -> Option<String> {
+    let expr = gridcraft_formula::parse(formula.strip_prefix('=').unwrap_or(formula)).ok()?;
+    let exprs = HashMap::default();
+    let mut rng = 0x1234_5678_9ABC_DEF0u64;
+    let mut host = PassHost::new(wb, &exprs, &mut rng, now_serial());
+    Evaluator::new(&mut host, sheet, at).hyperlink_target(&expr)
+}
+
 #[allow(clippy::disallowed_methods)] // the clock is read only off wasm
 fn prof_now() -> f64 {
     #[cfg(not(target_arch = "wasm32"))]
