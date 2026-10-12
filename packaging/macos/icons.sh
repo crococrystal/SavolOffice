@@ -16,3 +16,6 @@ for s in 16 32 128 256 512; do
   render "$((s * 2))" "$SET/icon_${s}x${s}@2x.png"
 done
 iconutil -c icns -o "$DIR/savoloffice.icns" "$SET"
+
+# Windows embeds a multi-resolution ICO in the executable.
+magick "$TMP/master.png" -define icon:auto-resize=256,128,64,48,32,24,16 "$DIR/savoloffice.ico"

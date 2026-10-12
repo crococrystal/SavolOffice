@@ -1,6 +1,6 @@
 # SavolOffice
 
-One desktop spreadsheet application, based on [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team. Local version: **v3** (`0.6.1-savol.3`).
+One desktop spreadsheet application, based on [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team. Local version: **v4** (`0.6.1-savol.4`).
 
 This fork fixes floating pictures overlapping frozen panes and follows formula hyperlinks (including scalar IF/IFERROR/IFNA wrappers) with a click.
 
@@ -12,3 +12,5 @@ The package contains one application. Internal Rust crate names and automation c
 Upstream architecture, file-format support and known limitations are documented in `docs/`. Copyright and contributor credits are retained in the source and in Help → About.
 
 The v3 app and DMG volume use the supplied SavolOffice artwork, with macOS icon sizes 16–1024 px including Retina. Regenerate them with `bash packaging/macos/icons.sh` (rsvg-convert and ImageMagick required).
+
+Windows x64: `pwsh packaging/windows/package.ps1 -Arch x64` produces a standalone `SavolOffice.exe` and a ZIP with licence files. The manual Windows workflow builds and checks the native app on a Windows runner. No separate CLI application is shipped.

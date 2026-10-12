@@ -1,6 +1,6 @@
 # GridCraft — instructions for agents
 
-Local test builds: increment the integer in the workspace version suffix `-savol.N` by one per completed change, and report it in the final response. Current local build: `0.6.1-savol.3`.
+Local test builds: increment the integer in the workspace version suffix `-savol.N` by one per completed change, and report it in the final response. Current local build: `0.6.1-savol.4`.
 
 GridCraft is a clean-room, open-source, Rust-native spreadsheet targeting Microsoft Excel parity — and superiority (speed, openness, agent control). It runs natively on macOS, Windows, Linux and BSD, and on the web via WASM. Siblings with the same conventions: `../designcraft` (InDesign-class, the closest reference), `../photocraft` (Photoshop), `../vectorcraft` (Illustrator), `../pdfcraft` (Acrobat), `../filmcraft` (Premiere), `../lightcraft` (Lightroom), `../effectcraft` (After Effects).
 

@@ -1,0 +1,29 @@
+name: Build SavolOffice EXE
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    env:
+      RUSTUP_TOOLCHAIN: 1.95.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup toolchain install 1.95.0 --profile minimal --target x86_64-pc-windows-msvc
+      - name: Build Windows x64 app
+        run: ./packaging/windows/package.ps1 -Arch x64
+      - name: Regression tests
+        run: |
+          cargo test --release -p gridcraft-calc hyperlink_destination --lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --release -p gridcraft-ui-egui --test cell_pictures --test interaction
+      - name: Launch native Windows app
+        run: python packaging/windows/smoke.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SavolOffice-Windows-x64
+          path: dist/release/*
+          if-no-files-found: error

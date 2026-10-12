@@ -45,3 +45,4 @@ Generated-in-code art is original and has no file to list: the UI icon set (`cra
 | `assets/app-icon/savoloffice.svg` | User-provided artwork | savol-office-macbook-icon.svg supplied by the user | User-authorized use in SavolOffice | Rounded macOS tile; original symbol preserved |
 | `assets/app-icon/savoloffice-512.png` | User-provided artwork | Rendered from savoloffice.svg | User-authorized use in SavolOffice | Runtime icon |
 | `assets/app-icon/savoloffice.icns` | User-provided artwork | Rendered from savoloffice.svg | User-authorized use in SavolOffice | macOS bundle icon |
+| `assets/app-icon/savoloffice.ico` | User-provided artwork | Rendered from savoloffice.svg | User-authorized use in SavolOffice | Windows Explorer and taskbar icon |
