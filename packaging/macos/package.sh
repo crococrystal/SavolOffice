@@ -132,10 +132,18 @@ mkdir -p "$STAGE"
 ditto "$APP" "$STAGE/SavolOffice.app"
 ln -s /Applications "$STAGE/Applications"
 cp "$ROOT/assets/app-icon/savoloffice.icns" "$STAGE/.VolumeIcon.icns"
-xcrun SetFile -a C "$STAGE"
 rm -f "$DMG"
 # makehybrid synthesizes FinderInfo on signed bundle files, invalidating strict verification.
-hdiutil create -fs HFS+ -volname "SavolOffice" -srcfolder "$STAGE" -format UDZO -imagekey zlib-level=9 "$DMG"
+# Finder's custom-volume-icon flag must be set on the volume, not the source folder.
+hdiutil create -fs HFS+ -volname "SavolOffice" -srcfolder "$STAGE" -format UDRW "$WORK/volume.dmg"
+mkdir -p "$WORK/volume"
+hdiutil attach -nobrowse -mountpoint "$WORK/volume" "$WORK/volume.dmg"
+trap 'hdiutil detach "$WORK/volume" >/dev/null 2>&1 || true' EXIT
+xcrun SetFile -a C "$WORK/volume"
+hdiutil detach "$WORK/volume"
+trap - EXIT
+hdiutil convert "$WORK/volume.dmg" -format UDZO -imagekey zlib-level=9 -o "$DMG"
+rm -f "$WORK/volume.dmg"
 sign "$DMG"
 codesign --verify --strict --verbose=2 "$DMG"
 if [ "$NOTARIZE" = 1 ]; then
