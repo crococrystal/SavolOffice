@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build, sign and (optionally) notarize the macOS release artifacts:
 #
-#   $DIST/SavolOffice.dmg — one spreadsheet app, SavolOffice.app
+#   $DIST/Savol Office.dmg — one spreadsheet app, Savol Office.app
 #
 # Usage: packaging/macos/package.sh [--arch universal|aarch64|x86_64] [--skip-build]
 #
@@ -38,8 +38,8 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 IDENTITY="${MACOS_SIGN_IDENTITY:--}"
 SHORT_VERSION="${VERSION%%-*}"
 WORK="$CARGO_TARGET_DIR/macos-package"
-APP="$WORK/SavolOffice.app"
-DMG="$DIST/SavolOffice.dmg"
+APP="$WORK/Savol Office.app"
+DMG="$DIST/Savol Office.dmg"
 BUILD_NUMBER="${VERSION##*-savol.}"
 
 NOTARIZE=0
@@ -51,7 +51,7 @@ else
   warn "macOS: APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID incomplete; signed but not notarized"
 fi
 
-echo "==> SavolOffice $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $NOTARIZE"
+echo "==> Savol Office $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $NOTARIZE"
 
 # ---- build -------------------------------------------------------------------------------------
 if [ "$SKIP_BUILD" = 0 ]; then
@@ -96,12 +96,12 @@ notarize() {
   fi
 }
 
-# ---- SavolOffice.app ----------------------------------------------------------------------------
+# ---- Savol Office.app ----------------------------------------------------------------------------
 echo "==> assembling $APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable and icon carry the display name (CFBundleExecutable / CFBundleIconFile).
-cp "$WORK/bin/gridcraft" "$APP/Contents/MacOS/SavolOffice"
-cp "$ROOT/assets/app-icon/savoloffice.icns" "$APP/Contents/Resources/SavolOffice.icns"
+cp "$WORK/bin/gridcraft" "$APP/Contents/MacOS/Savol Office"
+cp "$ROOT/assets/app-icon/savoloffice.icns" "$APP/Contents/Resources/Savol Office.icns"
 # Licences of the embedded craft-fonts fonts (only when built with CRAFT_FONTS_DIR).
 copy_docs "$APP/Contents/Resources"
 cp "$ROOT/ATTRIBUTION.md" "$APP/Contents/Resources/"
@@ -113,13 +113,13 @@ printf 'APPL????' >"$APP/Contents/PkgInfo"
 
 # Sign inside-out: nested code first, then the bundle itself (no --deep on the final signature).
 # Today the only nested code is the main executable; frameworks/helpers would be signed here too.
-sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/SavolOffice"
+sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/Savol Office"
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP"
 codesign --verify --strict --deep --verbose=2 "$APP"
 
 if [ "$NOTARIZE" = 1 ]; then
-  ditto -c -k --keepParent "$APP" "$WORK/SavolOffice-notarize.zip"
-  notarize "$WORK/SavolOffice-notarize.zip"
+  ditto -c -k --keepParent "$APP" "$WORK/Savol Office-notarize.zip"
+  notarize "$WORK/Savol Office-notarize.zip"
   xcrun stapler staple "$APP"
   xcrun stapler validate "$APP"
   spctl --assess --type execute -vvv "$APP"
@@ -129,13 +129,13 @@ fi
 echo "==> building $DMG"
 STAGE="$WORK/dmg"
 mkdir -p "$STAGE"
-ditto "$APP" "$STAGE/SavolOffice.app"
+ditto "$APP" "$STAGE/Savol Office.app"
 ln -s /Applications "$STAGE/Applications"
 cp "$ROOT/assets/app-icon/savoloffice.icns" "$STAGE/.VolumeIcon.icns"
 rm -f "$DMG"
 # makehybrid synthesizes FinderInfo on signed bundle files, invalidating strict verification.
 # Finder's custom-volume-icon flag must be set on the volume, not the source folder.
-hdiutil create -fs HFS+ -volname "SavolOffice" -srcfolder "$STAGE" -format UDRW "$WORK/volume.dmg"
+hdiutil create -fs HFS+ -volname "Savol Office" -srcfolder "$STAGE" -format UDRW "$WORK/volume.dmg"
 mkdir -p "$WORK/volume"
 hdiutil attach -nobrowse -mountpoint "$WORK/volume" "$WORK/volume.dmg"
 trap 'hdiutil detach "$WORK/volume" >/dev/null 2>&1 || true' EXIT
@@ -153,5 +153,5 @@ if [ "$NOTARIZE" = 1 ]; then
   spctl --assess --type open --context context:primary-signature -vvv "$DMG"
 fi
 
-echo "==> done: SavolOffice $VERSION"
+echo "==> done: Savol Office $VERSION"
 ls -lh "$DMG"

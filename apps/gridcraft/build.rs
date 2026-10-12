@@ -14,12 +14,12 @@ fn main() {
     }
     let mut res = winresource::WindowsResource::new();
     res.set_icon("../../assets/app-icon/savoloffice.ico")
-        .set("ProductName", "SavolOffice")
-        .set("FileDescription", "SavolOffice spreadsheet")
-        .set("CompanyName", "SavolOffice")
+        .set("ProductName", "Savol Office")
+        .set("FileDescription", "Savol Office spreadsheet")
+        .set("CompanyName", "Savol Office")
         .set("LegalCopyright", "Copyright (c) the GridCraft authors. MIT OR Apache-2.0.")
-        .set("OriginalFilename", "SavolOffice.exe")
-        .set("InternalName", "SavolOffice");
+        .set("OriginalFilename", "Savol Office.exe")
+        .set("InternalName", "Savol Office");
     if let Err(e) = res.compile() {
         if std::env::var_os("GRIDCRAFT_REQUIRE_WINRES").is_some() {
             eprintln!("embedding Windows resources failed: {e}");

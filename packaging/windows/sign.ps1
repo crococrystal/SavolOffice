@@ -55,7 +55,7 @@ if (-not $haveCert -and -not $haveAzure) {
 }
 
 $script:SignTool = Find-SignTool
-$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'SavolOffice', '/du', 'https://github.com/crococrystal/SavolOffice')
+$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Savol Office', '/du', 'https://github.com/crococrystal/SavolOffice')
 $tmp = Join-Path ([IO.Path]::GetTempPath()) "gridcraft-sign-$PID"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 

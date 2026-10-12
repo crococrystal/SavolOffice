@@ -321,7 +321,7 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Command\nPalette" => "Befehls-\npalette",
         "Agent\nControl" => "Agenten-\nsteuerung",
         "Action\nJournal" => "Aktions-\nprotokoll",
-        "About\nSavolOffice" => "Über\nSavolOffice",
+        "About\nSavol Office" => "Über\nSavol Office",
         "Share" => "Teilen",
         "Add Chart\nElement" => "Diagrammelement\nhinzufügen",
         "Change\nChart Type" => "Diagrammtyp\nändern",

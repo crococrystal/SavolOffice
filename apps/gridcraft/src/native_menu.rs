@@ -199,8 +199,8 @@ fn select_theme(app: &mut SheetApp, id: &str) -> bool {
 impl NativeMenu {
     pub fn install(ctx: &egui::Context) -> NativeMenu {
         let menu = Menu::new();
-        let app_menu = Submenu::new("SavolOffice", true);
-        let about = MenuItem::with_id("dialog:about", "About SavolOffice", true, None);
+        let app_menu = Submenu::new("Savol Office", true);
+        let about = MenuItem::with_id("dialog:about", "About Savol Office", true, None);
         let _ = app_menu.append_items(&[
             &about,
             &PredefinedMenuItem::separator(),

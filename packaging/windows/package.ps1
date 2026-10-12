@@ -1,4 +1,4 @@
-<# Builds one portable SavolOffice.exe, with static CRT and embedded icon. #>
+<# Builds one portable Savol Office.exe, with static CRT and embedded icon. #>
 param(
   [ValidateSet('x64', 'x86', 'arm64')] [string] $Arch = 'x64',
   [switch] $SkipBuild
@@ -31,7 +31,7 @@ New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 if (-not $env:GRIDCRAFT_BUILD_SHA) { $env:GRIDCRAFT_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
 if (-not $env:GRIDCRAFT_BUILD_DATE) { $env:GRIDCRAFT_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
 
-Write-Output "SavolOffice $Version for Windows $Arch ($Target)"
+Write-Output "Savol Office $Version for Windows $Arch ($Target)"
 
 if (-not $SkipBuild) {
   # Static CRT: no VC++ redistributable needed. Scoped to the target so host build scripts and
@@ -55,17 +55,17 @@ $Machine = switch ($Arch) { 'x64' { 0x8664 } 'x86' { 0x14C } 'arm64' { 0xAA64 } 
 $h = Get-PeHeader (Join-Path $Bin 'gridcraft.exe')
 if ($h.Machine -ne $Machine) { throw "Wrong PE architecture: $($h.Machine), expected $Machine" }
 if ($h.Subsystem -ne 2) { throw "Expected Windows GUI subsystem, got $($h.Subsystem)" }
-Write-Output "ok SavolOffice: $Arch, Windows GUI"
+Write-Output "ok Savol Office: $Arch, Windows GUI"
 $Stage = Join-Path $TargetDir "windows-package\$Arch"
 Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
-Copy-Item (Join-Path $Bin 'gridcraft.exe') (Join-Path $Stage 'SavolOffice.exe')
+Copy-Item (Join-Path $Bin 'gridcraft.exe') (Join-Path $Stage 'Savol Office.exe')
 
-& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'SavolOffice.exe')
-Copy-Item (Join-Path $Stage 'SavolOffice.exe') (Join-Path $Dist 'SavolOffice.exe')
+& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'Savol Office.exe')
+Copy-Item (Join-Path $Stage 'Savol Office.exe') (Join-Path $Dist 'Savol Office.exe')
 
 # ---- portable zip ------------------------------------------------------------------------------
-$Portable = Join-Path $TargetDir "windows-package\SavolOffice"
+$Portable = Join-Path $TargetDir "windows-package\Savol Office"
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
@@ -79,11 +79,11 @@ if ($env:CRAFT_FONTS_DIR) {
     Copy-Item $ofl.FullName (Join-Path $Portable "OFL-$($ofl.Directory.Name).txt")
   }
 }
-$Zip = Join-Path $Dist "SavolOffice-windows-$Arch.zip"
+$Zip = Join-Path $Dist "Savol Office-windows-$Arch.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
 
-$meta = (Get-Item (Join-Path $Stage 'SavolOffice.exe')).VersionInfo
-if ($meta.ProductName -ne 'SavolOffice') { throw 'Missing SavolOffice Windows resources' }
-if ($meta.OriginalFilename -ne 'SavolOffice.exe') { throw 'Incorrect executable identity' }
-Get-Item (Join-Path $Dist 'SavolOffice.exe'), $Zip | Format-Table Name, Length
+$meta = (Get-Item (Join-Path $Stage 'Savol Office.exe')).VersionInfo
+if ($meta.ProductName -ne 'Savol Office') { throw 'Missing Savol Office Windows resources' }
+if ($meta.OriginalFilename -ne 'Savol Office.exe') { throw 'Incorrect executable identity' }
+Get-Item (Join-Path $Dist 'Savol Office.exe'), $Zip | Format-Table Name, Length

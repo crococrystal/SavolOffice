@@ -6,13 +6,13 @@ import subprocess
 import time
 
 root = Path(__file__).resolve().parents[2]
-app = root / 'dist/release/SavolOffice.exe'
+app = root / 'dist/release/Savol Office.exe'
 process = subprocess.Popen([str(app), '--sample', 'sales', '--control', '17987'])
 try:
     deadline = time.monotonic() + 30
     while True:
         if process.poll() is not None:
-            raise RuntimeError(f'SavolOffice exited at startup: {process.returncode}')
+            raise RuntimeError(f'Savol Office exited at startup: {process.returncode}')
         try:
             connection = socket.create_connection(('127.0.0.1', 17987), timeout=2)
             break
